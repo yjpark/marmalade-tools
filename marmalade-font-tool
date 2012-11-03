@@ -1,0 +1,91 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import argparse
+import glob
+from PIL import Image, ImageDraw
+
+sys.path.append(os.path.dirname(__file__))
+
+from font.FontDef import FontDef
+
+def info(msg):
+    print msg
+
+def info_line():
+    info('--------------------------------------------------------------------------')
+
+def check_convert_font_args(args):
+    if not args.from_path:
+        info('Please specify the path to find the original font')
+        sys.exit(2)
+    if not args.to_path:
+        info('Please specify the path to save the converted font')
+        sys.exit(2)
+    if not args.name:
+        info('Please specify the font name')
+        sys.exit(2)
+
+def convert_font(args):
+    from_path = args.from_path
+    to_path = args.to_path
+    name = args.name
+    fontDef = FontDef(name, from_path, to_path)
+    fontDef.convert()
+
+def check_extract_text_args(args):
+    if not args.translation_path:
+        info('Please specify the path of the translation file (.json)')
+        sys.exit(3)
+
+def extract_text(args):
+    translation_path = args.translation_path
+    language = args.language
+    ch_set = set()
+    def add_str(str):
+        if not str:
+            return
+        for ch in str:
+            ch_set.add(ch)
+
+    import json
+    trans = json.load(open(translation_path))
+    for section in trans.values():
+        for item in section.values():
+            if language:
+                add_str(item[language])
+            else:
+                for value in item.values():
+                    add_str(value)
+    ch_list = list(ch_set)
+    ch_list.sort()
+    info(''.join(ch_list).encode('utf-8'))
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--from_path', help='Path of the original font')
+    parser.add_argument('-t', '--to_path', help='Path of the converted font')
+    parser.add_argument('-n', '--name', help='Font name')
+
+    parser.add_argument('-r', '--translation_path', help='Translation path')
+    parser.add_argument('-l', '--language', help='Translation language')
+
+    cmds = parser.add_mutually_exclusive_group()
+    cmds.add_argument('-c', '--convert_gxfont', action='store_true', help='Convert gxfont from cocos2d font')
+    cmds.add_argument('-x', '--extract_text', action='store_true', help='Extract text from translation files')
+
+    args = parser.parse_args()
+
+    if args.convert_gxfont:
+        check_convert_font_args(args)
+        convert_font(args)
+    elif args.extract_text:
+        check_extract_text_args(args)
+        extract_text(args)
+    else:
+        info('Please specify the command you want to execute')
+
+if __name__ == '__main__':
+    main()
+
