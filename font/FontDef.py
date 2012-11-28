@@ -59,7 +59,7 @@ class FontDef:
         f.close()
    
     def convert_vga(self):
-        margin = 4
+        margin = 3
         width = margin
         maxHeight = self.lineHeight
         for ch in self.chars:
@@ -84,7 +84,7 @@ class FontDef:
             draw.rectangle((targetX, margin, targetX + targetW, margin + maxHeight), (0,0,0,0))
 
             glyph = self.image.copy().crop((x, y, x + w, y + h))
-            targetY = margin + maxHeight - self.lineHeight + int(ch['yoffset']) + (self.lineHeight - self.base) / 2 
+            targetY = margin + int(ch['yoffset']) + (self.lineHeight - self.base) / 2
             target = (targetX + xoffset, targetY, targetX + xoffset + w, targetY + h)
             tga.paste(glyph, target)
             targetX += targetW + margin
